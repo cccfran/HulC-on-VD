@@ -43,7 +43,7 @@ partialling_out_estimator <- function(data, Y_var, A_var, formula) {
   return(list(coefficients = coef_hat))
 }
 
-
+# WIP: sd too big
 VD <- function(data, Y_var, A_var, formula,  g = I, g_inv = I) {
   
   # AX formula
