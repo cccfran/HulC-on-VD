@@ -75,7 +75,7 @@ partialling_out_estimator_rf <- function(data, Y_var, A_var, formula) {
 }
 
 # WIP: sd too big
-VD <- function(data, Y_var, A_var, formula,  g = I, g_inv = I) {
+VD_rf <- function(data, Y_var, A_var, formula,  g = I, g_inv = I) {
   
   # AX formula
   formula_AX <- update(formula, paste0(".~", A_var, "+."))
