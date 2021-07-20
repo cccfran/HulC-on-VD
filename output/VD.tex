@@ -1,8 +1,8 @@
 
 % Table created by stargazer v.5.2.2 by Marek Hlavac, Harvard University. E-mail: hlavac at fas.harvard.edu
-% Date and time: Tue, Jul 20, 2021 - 13:11:03
+% Date and time: Tue, Jul 20, 2021 - 13:19:47
 \begin{table}[!htbp] \centering 
-  \caption{Compare the confidence intervals by the sandwich package and HulC. The weighted average difference of log-odds are estimated using the authors' proposals in Section 5.1.2. Model (1) and (2) estimate propensity-overlap weighted effect of First Steps participation on birth weight; Model (3) and (4) estimate the weighted effect of maternal age. All the nuisance functionals are estimated using SuperLearner with all the candidate methods mentioned in the paper except for support vector machines. The estimates are sensitive to the tuning parameters and the candidate methods for the nuisance functional estimation.} 
+  \caption{Compare the confidence intervals by the sandwich package and HulC. The weighted average difference of log-odds are estimated using the authors' proposals in Section 5.1.2. Model (1) and (2) estimate propensity-overlap weighted effect of First Steps participation on birth weight; Model (3) and (4) estimate the weighted effect of maternal age. All the nuisance functionals are estimated using SuperLearner with all the candidate methods mentioned in the paper except for support vector machines. The estimates are sensitive to the tuning parameters and the candidate methods for the nuisance functional estimation. Note that age is significant at 0.05 level using the authors' proposed method, while is insignificant using HulC.} 
   \label{tbl:VD-ci} 
 \begin{tabular}{@{\extracolsep{-10pt}}lcccc} 
 \\[-1.8ex]\hline 
@@ -10,7 +10,7 @@
  & \multicolumn{4}{c}{\textit{Dependent variable:}} \\ 
 \cline{2-5} 
 \\[-1.8ex] & \multicolumn{4}{c}{Low birth weight} \\ 
- & lm & HulC & lm & HulC \\ 
+ & VD & HulC & VD & HulC \\ 
 \\[-1.8ex] & (1) & (2) & (3) & (4)\\ 
 \hline \\[-1.8ex] 
  firstep & 0.04 & 0.04 &  &  \\ 
