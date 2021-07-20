@@ -1,7 +1,11 @@
 library(sandwich)
 library(grf)
+source("HulC/R/auxiliary_functions.R")
 
-HulC <- function(data, B = 5, FUN, ...)  {
+HulC <- function(data, alpha = 0.05, FUN, ...)  {
+  
+  # number of splits
+  B <- solve_for_B(alpha, Delta = 0, t = 0)
   
   # create random index
   set.seed(1)
