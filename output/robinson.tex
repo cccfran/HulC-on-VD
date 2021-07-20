@@ -1,6 +1,6 @@
 
 % Table created by stargazer v.5.2.2 by Marek Hlavac, Harvard University. E-mail: hlavac at fas.harvard.edu
-% Date and time: Mon, Jul 19, 2021 - 23:32:54
+% Date and time: Tue, Jul 20, 2021 - 13:06:48
 \begin{table}[!htbp] \centering 
   \caption{Compare the confidence intervals by the sandwich package and HulC. The effects are estiamted using the `partialling out' estimator of Robinson. Model (1) and (2) estimate the propensity-overlap weighted effect of First Steps participation on birth weight; Model (3) and (4) estimate the weighted effect of maternal age. All the nuisance functionals are estimated using SuperLearner with all the candidate methods mentioned in the paper except for support vector machines. The estimates are sensitive to the tuning parameters and the candidate methods for the nuisance functional estimation.} 
   \label{tbl:robinson-ci} 
@@ -13,11 +13,11 @@
  & lm & HulC & lm & HulC \\ 
 \\[-1.8ex] & (1) & (2) & (3) & (4)\\ 
 \hline \\[-1.8ex] 
- firstep & $-$8.0 & $-$8.0 &  &  \\ 
-  & ($-$84.5, 68.4) & ($-$158.0, 141.2) &  &  \\ 
+ firstep & $-$7.1 & $-$7.1 &  &  \\ 
+  & ($-$85.1, 70.9) & ($-$159.4, 144.2) &  &  \\ 
   & & & & \\ 
- age &  &  & $-$1.4 & $-$1.4 \\ 
-  &  &  & ($-$6.4, 3.6) & ($-$14.1, 5.0) \\ 
+ age &  &  & $-$1.6 & $-$1.6 \\ 
+  &  &  & ($-$6.5, 3.4) & ($-$14.0, 5.0) \\ 
   & & & & \\ 
 \hline \\[-1.8ex] 
 Observations & 2,500 & 2,500 & 2,500 & 2,500 \\ 

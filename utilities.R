@@ -132,15 +132,14 @@ VD <- function(data, Y_var, A_var, formula, SL.library, ci_level = 0.95) {
   weight<-QA*(1-QA)
   scale<-1/weight
   
-  set.seed(149)
   # \hat{E}(A|L)
+  family <- ifelse(dim(table(A)) == 2, "binomial", "gaussian")
+  fit_AL <- SuperLearner(A, X, SL.library=SL.library, family = family)
+  ps <- predict(fit_AL)$pred
+  
   if(dim(table(A)) == 2) {
     
     # if A is binary variable
-    
-    fit_AL <- SuperLearner(A, X, SL.library=SL.library, family = "binomial")
-    ps <- predict(fit_AL)$pred
-    
     Q1 <- predict(fit_YAX,
                   newdata = data.frame(cbind(firstep=1,X)), 
                   onlySL = T)$pred
@@ -151,7 +150,7 @@ VD <- function(data, Y_var, A_var, formula, SL.library, ci_level = 0.95) {
     
   } else {
     fit_AL <- SuperLearner(qlogis(QA), X, SL.library=SL.library)
-    ps <- proj <- predict(fit_AL)$pred
+    proj <- predict(fit_AL)$pred    
   }
 
   mu_hat <- scale*(Y-QA) + qlogis(QA) - proj
