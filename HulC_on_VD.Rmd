@@ -513,7 +513,7 @@ stargazer(fit_template, fit_template,
           keep.stat = c("n"),
           omit.table.layout = "n",
           column.sep.width = "-10pt", digits = 1,
-          caption = "Compare the confidence intervals by the sandwich package and HulC. The effects are estiamted using the authors' proposals in Section 5.1.2. Model (1) and (2) estimate propensity-overlap weighted effect of First Steps participation on birth weight; Model (3) and (4) estimate the weighted effect of maternal age. All the nuisance functionals are estimated using SuperLearner with all the candidate methods mentioned in the paper except for support vector machines. The estimates are sensitive to the tuning parameters and the candidate methods for the nuisance functional estimation.",
+          caption = "Compare the confidence intervals by the sandwich package and HulC. The weighted average difference of log-odds are estimated using the authors' proposals in Section 5.1.2. Model (1) and (2) estimate propensity-overlap weighted effect of First Steps participation on birth weight; Model (3) and (4) estimate the weighted effect of maternal age. All the nuisance functionals are estimated using SuperLearner with all the candidate methods mentioned in the paper except for support vector machines. The estimates are sensitive to the tuning parameters and the candidate methods for the nuisance functional estimation.",
           label = "tbl:VD-ci",
           out = "output/VD.tex")
 ```
