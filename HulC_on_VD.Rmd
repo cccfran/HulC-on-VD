@@ -17,10 +17,12 @@ output:
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, cache = T, eval = T, warning = F, message=F)
-pacman::p_load(dplyr, grf, sandwich, skimr,
+pacman::p_load(dplyr, grf, sandwich, skimr, stargazer,
                lmtest, SuperLearner, ranger, gbm, xgboost, glmnet,
                KernelKnn)
 source("utilities.R")
+
+output_type <- knitr::opts_knit$get("rmarkdown.pandoc.to")
 ```
 
 \pagebreak
@@ -36,7 +38,7 @@ colnames(kc) <- c("gender","plural","age","race","parity","married","bwt","smoke
 kc$paritycat <- ifelse(kc$parity>1,2,kc$parity)
 
 # set race and paritycat as factors
-cols_to_factor <- c("firstep", "race", "paritycat", "smoker", "gender", "married")
+cols_to_factor <- c("race", "paritycat", "smoker", "gender", "married")
 # cols_to_factor <- c("race", "paritycat")
 kc[cols_to_factor] <- lapply(kc[cols_to_factor], factor)
 
@@ -83,59 +85,122 @@ The authors consider a linear model with and without interaction between the par
 
 ## Full model
 
-```{r}
+```{r, results='asis'}
 # Y: infant birth weight (in grams)
 # X: participation onthe First Steps program, maternal age, child’s sex, mother’s age, race (asian, black, hispanic, white or other), smoking status and marital status
 formula_lm <- bwt ~ firstep+age+gender+race+paritycat+married+smoker+wpre+education
 # lm
 fit_lm <- lm(formula_lm, kc)
-confint(fit_lm, 'firstep', level = ci_level)
+ci_lm <- confint(fit_lm, level = ci_level)
 
 # HulC
-HulC(kc, FUN = lm, formula = formula_lm) %>%
-  filter(coef == "firstep")
+ci_hulc <- HulC(kc, FUN = lm, formula = formula_lm)
+
+stargazer(fit_lm, fit_lm,
+          type = output_type,
+          star.cutoffs = NA,
+          column.labels = c("lm", "HulC"),
+          ci.custom = list(ci_lm, ci_hulc[,2:3]),
+          ci=T,
+          keep=c("firstep", "age", "firstep:age"),
+          keep.stat = c("n"),
+          omit.table.layout = "n")
 ```
 
 ## Age
 
-```{r}
+```{r, results='asis'}
 formula_lm <- bwt ~ age+gender+race+paritycat+married+smoker+wpre+education
 # lm
-fit_lm <- lm(formula_lm, kc)
-confint(fit_lm, 'age', level = ci_level)
+fit_lm_age <- lm(formula_lm, kc)
+ci_lm_age <- confint(fit_lm_age, level = ci_level)
 
 # HulC
-HulC(kc, FUN = lm, formula = formula_lm) %>%
-  filter(coef == "age")
+ci_hulc_age <- HulC(kc, FUN = lm, formula = formula_lm)
+
+
+stargazer(fit_lm_age, fit_lm_age,
+          type = output_type,
+          star.cutoffs = NA,
+          column.labels = c("lm", "HulC"),
+          ci.custom = list(ci_lm_age, ci_hulc_age[,2:3]),
+          ci=T,
+          keep=c("firstep", "age", "firstep:age"),
+          keep.stat = c("n"),
+          omit.table.layout = "n")
 ```
 
 ## Unadjusted for covariates
 
-```{r}
+```{r, results='asis'}
 formula_lm <- bwt ~ firstep
 # lm
-fit_lm <- lm(formula_lm, kc)
-confint(fit_lm, 'firstep', level = ci_level)
+fit_lm_unadjusted <- lm(formula_lm, kc)
+ci_lm_unadjusted <- confint(fit_lm_unadjusted, level = ci_level)
 
 # HulC
-HulC(kc, FUN = lm, formula = formula_lm) %>%
-  filter(coef == "firstep")
+ci_hulc_unadjusted <- HulC(kc, FUN = lm, formula = formula_lm)
+
+stargazer(fit_lm_unadjusted, fit_lm_unadjusted,
+          type = output_type,
+          star.cutoffs = NA,
+          column.labels = c("lm (unadjusted)", "HulC (unadjusted)"),
+          ci.custom = list(ci_lm_unadjusted, ci_hulc_unadjusted[,2:3]),
+          ci=T,
+          keep=c("firstep", "age", "firstep:age"),
+          keep.stat = c("n"),
+          omit.table.layout = "n")
 ```
 
 
 ## Interaction
 
-```{r}
+```{r, results='asis'}
 formula_int <- bwt~firstep+age+firstep*age+gender+race+paritycat+married+smoker+wpre+education
 
 vars <- c('firstep', 'age', 'firstep:age')
 # lm with interaction
-fit_lm <- lm(formula_int, kc)
-confint(fit_lm, vars, level = ci_level)
+fit_lm_int <- lm(formula_int, kc)
+ci_lm_int <- confint(fit_lm_int, level = ci_level)
 
 # HulC
-HulC(kc, FUN = lm, formula = formula_int) %>%
-  filter(coef %in% vars)
+ci_hulc_int <- HulC(kc, FUN = lm, formula = formula_int)
+
+stargazer(fit_lm_int, fit_lm_int,
+          type = output_type,
+          star.cutoffs = NA,
+          column.labels = c("lm", "HulC"),
+          ci.custom = list(ci_lm_int, ci_hulc_int[,2:3]),
+          ci=T,
+          keep=c("firstep", "age", "firstep:age"),
+          keep.stat = c("n"),
+          omit.table.layout = "n")
+```
+
+## Summary
+
+```{r, results='asis'}
+stargazer(fit_lm, fit_lm, fit_lm_age, fit_lm_age,
+          # fit_lm_unadjusted, fit_lm_unadjusted,
+          fit_lm_int, fit_lm_int,
+          type = output_type, 
+          star.cutoffs = NA,
+          column.labels = c("lm", "HulC", "lm", "HulC", 
+                            # "lm (unadjusted)", "HulC (unadjusted)", 
+                            "lm", "HulC"),
+          ci.custom = list(ci_lm, ci_hulc[,2:3],
+                           ci_lm_age, ci_hulc_age[,2:3],
+                           # ci_lm_unadjusted, ci_hulc_unadjusted[,2:3],
+                           ci_lm_int, ci_hulc_int[,2:3]),
+          ci=T,
+          dep.var.labels = "Birth weight",
+          keep=c("firstep", "age", "firstep:age"),
+          keep.stat = c("n"),
+          omit.table.layout = "n",
+          column.sep.width = "-10pt", digits = 1,
+          caption = "Compare the confidence intervals by lm() and HulC. Model (1) and (2) include the First Steps program participation and maternal age; Model (3) and (4) include only age; Model (5) and (6) include the First Steps program participation and maternal age with their interaction. All models control for child’s sex, number of previous live born infants, weight prior to pregnancy, education, smoking status and marital status.",
+          label = "tbl:lm-ci",
+          out = "output/lm.tex")
 ```
 
 # GLM
@@ -144,64 +209,123 @@ Similarly, the author repeated the analysis after dichotomising the outcome (an 
 
 ## Full model
 
-```{r}
+```{r, results='asis'}
 formula_glm <- lbw~firstep+age+gender+race+paritycat+married+smoker+wpre+education
 # glm
 fit_glm <- glm(formula_glm, kc, family = "binomial")
-confint(fit_glm, 'firstep', level = ci_level)
+ci_glm <- confint(fit_glm, level = ci_level)
 
 # HulC
-HulC(kc, FUN = glm, formula = formula_glm, family = "binomial") %>%
-  filter(coef == "firstep")
+ci_glm_hulc <- HulC(kc, FUN = glm, formula = formula_glm, family = "binomial")
+
+
+stargazer(fit_glm, fit_glm,
+          type = output_type,
+          star.cutoffs = NA,
+          column.labels = c("lm", "HulC"),
+          ci.custom = list(ci_glm, ci_glm_hulc[,2:3]),
+          ci=T,
+          keep=c("firstep", "age", "firstep:age"),
+          keep.stat = c("n"),
+          omit.table.layout = "n")
 ```
 
 ## Age
 
-```{r}
+```{r, results='asis'}
 formula_glm <- lbw ~ age+gender+race+paritycat+married+smoker+wpre+education
 # lm
-fit_glm <- glm(formula_glm, kc, family = "binomial")
-confint(fit_glm, 'age', level = ci_level)
+fit_glm_age <- glm(formula_glm, kc, family = "binomial")
+ci_glm_age <- confint(fit_glm, level = ci_level)
 
 # HulC
-HulC(kc, FUN = glm, formula = formula_glm, family = "binomial") %>%
-  filter(coef == "age")
+ci_glm_hulc_age <- HulC(kc, FUN = glm, formula = formula_glm, family = "binomial") 
+
+stargazer(fit_glm_age, fit_glm_age,
+          type = output_type,
+          star.cutoffs = NA,
+          column.labels = c("lm", "HulC"),
+          ci.custom = list(ci_glm_age, ci_glm_hulc_age[,2:3]),
+          ci=T,
+          keep=c("firstep", "age", "firstep:age"),
+          keep.stat = c("n"))
 ```
 
 ## Unadjusted for covariates
 
-```{r}
+```{r, results='asis'}
 formula_glm <- lbw ~ firstep
 # lm
-fit_glm <- glm(formula_glm, kc, family = "binomial")
-confint(fit_glm, 'firstep', level = ci_level)
+fit_glm_unadjusted <- glm(formula_glm, kc, family = "binomial")
+ci_glm_unadjusted <- confint(fit_glm, level = ci_level)
 
 # HulC
-HulC(kc, FUN = glm, formula = formula_glm, family = "binomial") %>%
-  filter(coef == "firstep")
+ci_glm_hulc_unadjusted <- HulC(kc, FUN = glm, formula = formula_glm, family = "binomial")
+
+stargazer(fit_glm_unadjusted, fit_glm_unadjusted,
+          type = output_type,
+          star.cutoffs = NA,
+          column.labels = c("lm (unadjusted)", "HulC (unadjusted)"),
+          ci.custom = list(ci_glm_unadjusted, ci_glm_hulc_unadjusted[,2:3]),
+          ci=T,
+          keep=c("firstep", "age", "firstep:age"),
+          keep.stat = c("n"))
 ```
 
 
 ## Interaction 
 
-```{r}
+```{r, results='asis'}
 formula_int <- lbw~firstep+age+firstep*age+gender+race+paritycat+married+smoker+wpre+education
 
-vars <- c('firstep', 'age', 'firstep:age')
 # lm with interaction
-fit_glm <- glm(formula_int, kc, family = "binomial")
-confint(fit_glm, vars, level = ci_level)
+fit_glm_int <- glm(formula_int, kc, family = "binomial")
+ci_glm_int <- confint(fit_glm, level = ci_level)
 
 # HulC
-HulC(kc, FUN = glm, formula = formula_int, family = "binomial") %>%
-  filter(coef %in% vars)
+ci_glm_hulc_int <- HulC(kc, FUN = glm, formula = formula_int, family = "binomial") 
+
+stargazer(fit_glm_int, fit_glm_int,
+          type = output_type,
+          star.cutoffs = NA,
+          column.labels = c("lm", "HulC"),
+          ci.custom = list(ci_glm_int, ci_glm_hulc_int[,2:3]),
+          ci=T,
+          keep=c("firstep", "age", "firstep:age"),
+          keep.stat = c("n"),
+          omit.table.layout = "n")
+```
+## Summary
+
+```{r, results='asis'}
+stargazer(fit_glm, fit_glm, fit_glm_age, fit_glm_age,
+          # fit_glm_unadjusted, fit_glm_unadjusted,
+          fit_glm_int, fit_glm_int,
+          type = output_type, 
+          star.cutoffs = NA,
+          column.labels = c("lm", "HulC", "lm", "HulC", 
+                            # "lm (unadjusted)", "HulC (unadjusted)",
+                            "lm", "HulC"),
+          ci.custom = list(ci_glm, ci_glm_hulc[,2:3],
+                           ci_glm_age, ci_glm_hulc_age[,2:3],
+                           # ci_glm_unadjusted, ci_glm_hulc_unadjusted[,2:3],
+                           ci_glm_int, ci_glm_hulc_int[,2:3]),
+          ci=T,
+          dep.var.labels = "Low birth weight",
+          keep=c("firstep", "age", "firstep:age"),
+          keep.stat = c("n"),
+          omit.table.layout = "n",
+          column.sep.width = "-10pt", digits = 1,
+          caption = "Compare the confidence intervals by glm() and HulC. Model (1) and (2) include the First Steps program participation and maternal age; Model (3) and (4) include only age; Model (5) and (6) include the First Steps program participation and maternal age with their interaction. All models control for child’s sex, number of previous live born infants, weight prior to pregnancy, education, smoking status and marital status.",
+          label = "tbl:glm-ci",
+          out = "output/glm.tex")
 ```
 
 # Nonparametric
 
 Assume
 \[g\{E(Y|A,L)\} = \beta A + \omega(L)\], 
-the authors tried the "partialling out" estimator of Robinson (1988) and their proposal. All the nuisance are estimated using the `grf` package. They did not specify how they choose the tuning parameters so I assume they used the default.
+the authors tried the "partialling out" estimator of Robinson (1988) and their proposal. All the nuisance are estimated using the `SuperLearner` package. 
 
 
 ## "partialling out" estimator of Robinson (1988)
@@ -214,13 +338,30 @@ where the nuisances are estimated using `SuperLearner`.
 ```{r}
 formula <- bwt ~ age+gender+race+paritycat+married+smoker+wpre+education
 
-partialling_out_estimator(kc, formula = formula, 
+robinson_fit <- partialling_out_estimator(kc, formula = formula, 
                           Y_var = "bwt", A_var = "firstep",
                           SL.library = SL.library)
 
-HulC(kc, FUN = partialling_out_estimator,
+robinson_hulc <- HulC(kc, FUN = partialling_out_estimator,
      formula = formula, Y_var = "bwt", A_var = "firstep",
      SL.library = SL.library)
+```
+
+
+```{r, results='asis'}
+# output
+names(robinson_fit$coefficients) <- "firstep"
+fit_template <- lm(bwt~firstep-1, kc)
+stargazer(fit_template, fit_template,
+          type = output_type,
+          coef = list(robinson_fit$coefficients, robinson_fit$coefficients),
+          star.cutoffs = NA,
+          column.labels = c("lm", "HulC"),
+          ci.custom = list(robinson_fit$interval, robinson_hulc[,2:3]),
+          ci=T,
+          keep=c("firstep"),
+          keep.stat = c("n"),
+          omit.table.layout = "n")
 ```
 
 ### Age
@@ -228,28 +369,52 @@ HulC(kc, FUN = partialling_out_estimator,
 ```{r}
 formula <- bwt ~ gender+race+paritycat+married+smoker+wpre+education
 
-partialling_out_estimator(kc, formula = formula, 
+robinson_fit_age <- partialling_out_estimator(kc, formula = formula, 
                           Y_var = "bwt", A_var = "age",
                           SL.library = SL.library)
 
-HulC(kc, FUN = partialling_out_estimator,
+robinson_hulc_age <- HulC(kc, FUN = partialling_out_estimator,
      formula = formula, Y_var = "bwt", A_var = "age",
      SL.library = SL.library)
 ```
 
-### Interaction
+```{r, results='asis'}
+# output
+names(robinson_fit_age$coefficients) <- "age"
+fit_template_age <- lm(bwt~age-1, kc)
+stargazer(fit_template_age, fit_template_age,
+          type = output_type,
+          coef = list(robinson_fit_age$coefficients, robinson_fit_age$coefficients),
+          star.cutoffs = NA,
+          column.labels = c("lm", "HulC"),
+          ci.custom = list(robinson_fit_age$interval, robinson_hulc_age[,2:3]),
+          ci=T,
+          keep=c("age"),
+          keep.stat = c("n"),
+          omit.table.layout = "n")
+```
 
-```{r, eval = F}
-formula_int <- bwt~firstep+age+firstep*age+gender+race+paritycat+married+smoker+wpre+education
+### Summary
 
-vars <- c('firstep', 'age', 'firstep:age')
-# lm with interaction
-fit_lm <- lm(formula_int, kc)
-confint(fit_lm, vars, level = ci_level)
-
-# HulC
-HulC(kc, FUN = lm, formula = formula_int) %>%
-  filter(coef %in% vars)
+```{r, results='asis'}
+stargazer(fit_template, fit_template,
+          fit_template_age, fit_template_age,
+          type = output_type,
+          coef = list(robinson_fit$coefficients, robinson_fit$coefficients,
+                      robinson_fit_age$coefficients, robinson_fit_age$coefficients),
+          star.cutoffs = NA,
+          column.labels = c("lm", "HulC", "lm", "HulC"),
+          ci.custom = list(robinson_fit$interval, robinson_hulc[,2:3],
+                           robinson_fit_age$interval, robinson_hulc_age[,2:3]),
+          ci=T,
+          dep.var.labels = "Birth weight",
+          keep=c("firstep", "age", "firstep:age"),
+          keep.stat = c("n"),
+          omit.table.layout = "n",
+          column.sep.width = "-10pt", digits = 1,
+          caption = "Compare the confidence intervals by the sandwich package and HulC. The effects are estiamted using the `partialling out' estimator of Robinson. Model (1) and (2) estimate the propensity-overlap weighted effect of First Steps participation on birth weight; Model (3) and (4) estimate the weighted effect of maternal age. All the nuisance functionals are estimated using SuperLearner with all the candidate methods mentioned in the paper except for support vector machines. The estimates are sensitive to the tuning parameters and the candidate methods for the nuisance functional estimation.",
+          label = "tbl:robinson-ci",
+          out = "output/robinson.tex")
 ```
 
 
@@ -273,14 +438,30 @@ The variance is estimated through the sandwich estimator.
 ```{r}
 formula <- lbw ~ age+gender+race+paritycat+married+smoker+wpre+education
 
-VD(kc, formula = formula, 
+VD_fit <- VD(kc, formula = formula, 
    Y_var = "lbw", A_var = "firstep",
    SL.library = SL.library)
 
-HulC(kc, FUN = VD, 
+VD_hulc <- HulC(kc, FUN = VD, 
      formula = formula, 
      Y_var = "lbw", A_var = "firstep",
      SL.library = SL.library)
+```
+
+```{r, results='asis'}
+# output
+names(VD_fit$coefficients) <- "firstep"
+fit_template <- lm(lbw~firstep-1, kc)
+stargazer(fit_template, fit_template,
+          type = output_type,
+          coef = list(VD_fit$coefficients, VD_fit$coefficients),
+          star.cutoffs = NA,
+          column.labels = c("lm", "HulC"),
+          ci.custom = list(VD_fit$interval, VD_hulc[,2:3]),
+          ci=T,
+          keep=c("firstep"),
+          keep.stat = c("n"),
+          omit.table.layout = "n")
 ```
 
 
@@ -289,13 +470,50 @@ HulC(kc, FUN = VD,
 ```{r}
 formula <- lbw ~ gender+race+paritycat+married+smoker+wpre+education
 
-VD(kc, formula = formula, 
+VD_fit_age <- VD(kc, formula = formula, 
    Y_var = "lbw", A_var = "age",
    SL.library = SL.library)
 
-HulC(kc, FUN = VD,
+VD_hulc_age <- HulC(kc, FUN = VD,
      formula = formula, Y_var = "lbw", A_var = "age",
      SL.library = SL.library)
 ```
 
+```{r, results='asis'}
+# output
+names(VD_fit_age$coefficients) <- "age"
+fit_template_age <- lm(lbw~age-1, kc)
+stargazer(fit_template_age, fit_template_age,
+          type = output_type,
+          coef = list(VD_fit_age$coefficients, VD_fit_age$coefficients),
+          star.cutoffs = NA,
+          column.labels = c("lm", "HulC"),
+          ci.custom = list(VD_fit_age$interval, VD_hulc_age[,2:3]),
+          ci=T,
+          keep=c("age"),
+          keep.stat = c("n"),
+          omit.table.layout = "n")
+```
 
+### Summary
+
+```{r, results='asis'}
+stargazer(fit_template, fit_template,
+          fit_template_age, fit_template_age,
+          type = output_type,
+          coef = list(VD_fit$coefficients, VD_fit$coefficients,
+                      VD_fit_age$coefficients, VD_fit_age$coefficients),
+          star.cutoffs = NA,
+          column.labels = c("lm", "HulC", "lm", "HulC"),
+          ci.custom = list(VD_fit$interval, VD_hulc[,2:3],
+                           VD_fit_age$interval, VD_hulc_age[,2:3]),
+          ci=T,
+          dep.var.labels = "Low birth weight",
+          keep=c("firstep", "age", "firstep:age"),
+          keep.stat = c("n"),
+          omit.table.layout = "n",
+          column.sep.width = "-10pt", digits = 1,
+          caption = "Compare the confidence intervals by the sandwich package and HulC. The effects are estiamted using the authors' proposals in Section 5.1.2. Model (1) and (2) estimate propensity-overlap weighted effect of First Steps participation on birth weight; Model (3) and (4) estimate the weighted effect of maternal age. All the nuisance functionals are estimated using SuperLearner with all the candidate methods mentioned in the paper except for support vector machines. The estimates are sensitive to the tuning parameters and the candidate methods for the nuisance functional estimation.",
+          label = "tbl:VD-ci",
+          out = "output/VD.tex")
+```
