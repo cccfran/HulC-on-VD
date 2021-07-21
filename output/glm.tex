@@ -1,8 +1,8 @@
 
 % Table created by stargazer v.5.2.2 by Marek Hlavac, Harvard University. E-mail: hlavac at fas.harvard.edu
-% Date and time: Tue, Jul 20, 2021 - 13:19:46
+% Date and time: Tue, Jul 20, 2021 - 13:24:24
 \begin{table}[!htbp] \centering 
-  \caption{Compare the confidence intervals by glm() and HulC. Model (1) and (2) include the First Steps program participation and maternal age; Model (3) and (4) include only age; Model (5) and (6) include the First Steps program participation and maternal age with their interaction. All models control for child’s sex, number of previous live born infants, weight prior to pregnancy, education, smoking status and marital status. Note that age is significant at 0.05 level using glm(), while is insignificant using HulC.} 
+  \caption{Compare the confidence intervals by glm() and HulC. Model (1) and (2) include the First Steps program participation and maternal age; Model (3) and (4) include only age; Model (5) and (6) include the First Steps program participation and maternal age with their interaction. All models control for child’s sex, number of previous live born infants, weight prior to pregnancy, education, smoking status and marital status. Note that age is significant at 0.05 level across three models using glm(), while is insignificant using HulC.} 
   \label{tbl:glm-ci} 
 \begin{tabular}{@{\extracolsep{-10pt}}lcccccc} 
 \\[-1.8ex]\hline 
@@ -10,7 +10,7 @@
  & \multicolumn{6}{c}{\textit{Dependent variable:}} \\ 
 \cline{2-7} 
 \\[-1.8ex] & \multicolumn{6}{c}{Low birth weight} \\ 
- & lm & HulC & lm & HulC & lm & HulC \\ 
+ & glm & HulC & glm & HulC & glm & HulC \\ 
 \\[-1.8ex] & (1) & (2) & (3) & (4) & (5) & (6)\\ 
 \hline \\[-1.8ex] 
  firstep & $-$0.04 & $-$0.04 &  &  & $-$0.61 & $-$0.61 \\ 
